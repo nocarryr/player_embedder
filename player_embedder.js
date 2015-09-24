@@ -26,8 +26,6 @@
         },
         debugMode: false,
         debugOutputFunction: null,
-        debugSaveDataEnable: false,
-        debugData: [],
         debug: function(){
             if (!this.debugMode){
                 return;
@@ -39,13 +37,10 @@
             $.each(arguments, function(i, arg){
                 args.push(arg);
             });
-            if (this.debugOutputFunction == 'console'){
-                console.log(args);
-            } else if (this.debugOutputFunction){
+            if (this.debugOutputFunction){
                 this.debugOutputFunction(args);
-            }
-            if (this.debugSaveDataEnable){
-                this.debugData.push(args);
+            } else {
+                console.log(args);
             }
         },
         formatLibUrl: function(url){
@@ -402,11 +397,7 @@
                     playerWrapper.append(player);
                     data.container.append(playerWrapper);
                     self.debug('static content built... registering with swfobject');
-                    try {
-                        swfobject.registerObject(data.playerId, flashVars.minimumFlashPlayerVersion);
-                    } catch(e) {
-                        self.debug('swfobject error: ', e);
-                    }
+                    swfobject.registerObject(data.playerId, flashVars.minimumFlashPlayerVersion);
                 },
                 embedDynamic = function(playerWrapper){
                     self.debug('embedding using dynamic method');
@@ -415,11 +406,7 @@
                     player.append(self.buildFallbackContent(data));
                     playerWrapper.append(player);
                     data.container.append(playerWrapper);
-                    try {
-                        swfobject.embedSWF.apply(swfobject.embedSWF, embedData);
-                    } catch(e) {
-                        self.debug('swfobject error: ', e);
-                    }
+                    swfobject.embedSWF.apply(swfobject.embedSWF, embedData);
                 };
             $.each(embedDataKeys, function(i, key){
                 var val = flashVars[key];
@@ -435,19 +422,12 @@
                     flashVer,
                     flashVerStr = [];
                 self.debug('testing Flash version...');
-                try {
-                    flashVer = swfobject.getFlashPlayerVersion();
-                } catch(e) {
-                    self.debug('Flash detection error: ', e);
-                    flashVer = null;
-                }
-                if (flashVer){
-                    $.each(['major', 'minor', 'release'], function(i, n){
-                        flashVerStr.push(flashVer[n].toString());
-                    });
-                    flashVerStr = flashVerStr.join('.');
-                    self.debug('Flash version: ', flashVerStr);
-                }
+                flashVer = swfobject.getFlashPlayerVersion(),
+                $.each(['major', 'minor', 'release'], function(i, n){
+                    flashVerStr.push(flashVer[n].toString());
+                });
+                flashVerStr = flashVerStr.join('.');
+                self.debug('Flash version: ', flashVerStr);
                 self.addPlayerClasses(playerWrapper, data);
                 if (navigator.userAgent.search('PLAYSTATION') != -1){
                     embedStatic(playerWrapper);
