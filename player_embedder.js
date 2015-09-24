@@ -422,7 +422,7 @@
                     flashVer,
                     flashVerStr = [];
                 self.debug('testing Flash version...');
-                flashVer = swfobject.getFlashPlayerVersion(),
+                flashVer = swfobject.getFlashPlayerVersion();
                 $.each(['major', 'minor', 'release'], function(i, n){
                     flashVerStr.push(flashVer[n].toString());
                 });
