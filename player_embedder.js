@@ -49,10 +49,10 @@
             }
         },
         formatLibUrl: function(url){
-            var self = this;
-            var replTxt = null;
-            var lib = null;
-            var libUrl = null;
+            var self = this,
+                replTxt,
+                lib,
+                libUrl;
             if (url.indexOf('_ROOTURL_') == -1){
                 return url;
             }
@@ -62,10 +62,10 @@
             return url.replace(replTxt, libUrl);
         },
         loadSources: function(libName){
-            var self = this;
-            var cssComplete = false;
-            var scriptsComplete = false;
-            var loadedSources = $("body").data('player_embedder_sources_loaded');
+            var self = this,
+                cssComplete = false,
+                scriptsComplete = false,
+                loadedSources = $("body").data('player_embedder_sources_loaded');
             self.debug('loading sources');
             if (typeof(loadedSources) == 'undefined'){
                 loadedSources = {};
@@ -74,8 +74,8 @@
                 self.debug('sources already loaded: ', loadedSources);
             }
             function loadCss(){
-                var numResponse = 0;
-                var urls = self.cssUrls[libName];
+                var numResponse = 0,
+                    urls = self.cssUrls[libName];
                 if (!urls || urls.length == 0){
                     $("body").trigger('player_embedder_css_loaded');
                     return;
@@ -98,8 +98,8 @@
                 });
             }
             function loadJs(){
-                var numResponse = 0;
-                var urls = self.scriptUrls[libName];
+                var numResponse = 0,
+                    urls = self.scriptUrls[libName];
                 if (!urls || urls.length == 0){
                     $("body").trigger('player_embedder_scripts_loaded');
                     return;
@@ -145,11 +145,12 @@
             loadJs();
         },
         streamSrc: function(base_url){
-                var d = {};
-                d.base_url = base_url
-                d.hls_url = [base_url, 'playlist.m3u8'].join('/')
-                d.hds_url = [base_url, 'manifest.f4m'].join('/')
-                return d;
+            var d = {
+              base_url: base_url,
+              hls_url: [base_url, 'playlist.m3u8'].join('/'),
+              hds_url: [base_url, 'manifest.f4m'].join('/'),
+            };
+            return d;
         },
         embedDataDefaults: {
             streamSrc: '',
@@ -166,7 +167,7 @@
             expressInstallSwfUrl: '_ROOTURL_STROBE_/expressInstall.swf',
         },
         embedData: function(data){
-            d = {}
+            var d = {};
             $.each(playerEmbedder.embedDataDefaults, function(key, val){
                 if (typeof(data[key]) != 'undefined'){
                     val = data[key];
@@ -253,8 +254,8 @@
             return result;
         },
         doEmbed: function(data){
-            var self = this;
-            var embed_fn = null;
+            var self = this,
+                embed_fn;
             if (typeof(data) == 'string'){
                 data = {'streamSrc':data};
             }
@@ -295,8 +296,8 @@
             return data;
         },
         doEmbed_html5: function(data){
-            var self = playerEmbedder;
-            var vidtag = $("video", data.container);
+            var self = playerEmbedder,
+                vidtag = $("video", data.container);
             if (vidtag.length == 0){
                 vidtag = $('<video></video>');
                 data.container.append(vidtag);
@@ -322,14 +323,14 @@
         doEmbed_videojs: function(data){
             var self = playerEmbedder;
             $("body").one('player_embedder_sources_loaded', function(){
-                var vidtag = $("video", data.container);
-                var opts = {
-                    'controls': true,
-                    'autoplay': true,
-                    'width':data.size[0],
-                    'height':data.size[1],
-                    'nativeControlsForTouch': false,
-                };
+                var vidtag = $("video", data.container),
+                    opts = {
+                      'controls': true,
+                      'autoplay': true,
+                      'width':data.size[0],
+                      'height':data.size[1],
+                      'nativeControlsForTouch': false,
+                    };
                 if (vidtag.length == 0){
                     vidtag = $('<video></video>');
                     data.container.append(vidtag);
@@ -376,7 +377,7 @@
                         data.player = $("#" + event.id);
                     }
                     data.container.trigger('player_embed_complete');
-                };
+                },
                 embedStatic = function(playerWrapper){
                     self.debug('embedding using static method (PS3)');
                     var player = $('<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"></object>'),
@@ -460,9 +461,9 @@
             return data;
         },
         doResize: function(container, newSize){
-            var self = this;
-            var data = container.data('embedData');
-            var resizeFn = playerEmbedder['doResize_' + data.embed_method];
+            var self = this,
+                data = container.data('embedData'),
+                resizeFn = playerEmbedder['doResize_' + data.embed_method];
             if (data.sizeByCSS == true){
                 return;
             }
@@ -504,12 +505,12 @@
                 }
                 return width;
             }
-            var complete = null;
-            var hasChanged = false;
-            var x = getMaxWidth();
-            var xMin = x * 0.5;
-            var y = null;
-            var ratio = data.aspect_ratio[0] / data.aspect_ratio[1];
+            var complete,
+                hasChanged = false,
+                x = getMaxWidth(),
+                xMin = x * 0.5,
+                y,
+                ratio = data.aspect_ratio[0] / data.aspect_ratio[1];
             if (data.sizeWithContainer == true){
                 x = data.container.innerWidth();
                 y = data.container.innerHeight();
@@ -521,7 +522,7 @@
                     data.size[1] = y;
                     return true;
                 } else {
-                    data.size = [x, y]
+                    data.size = [x, y];
                     return true;
                 }
             }
