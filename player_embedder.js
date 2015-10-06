@@ -1,6 +1,6 @@
 (function($){
     var playerEmbedder = {
-        embed_methods: ['auto', 'html5', 'videojs', 'strobe'],
+        embed_methods: ['auto', 'html5', 'shaka', 'videojs', 'strobe'],
         html5_embed_method: 'html5',
         libRootUrls: {
             'videojs':'/videojs',
@@ -23,6 +23,9 @@
                 '//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js',
                 //'_ROOTURL_STROBE_/jquery.strobemediaplayback.js',
             ],
+            'shaka':[
+                '//cdnjs.cloudflare.com/ajax/libs/shaka-player/1.5.0/shaka-player.compiled.js',
+            ]
         },
         debugMode: false,
         debugOutputFunction: null,
@@ -144,11 +147,29 @@
             loadCss();
             loadJs();
         },
+        loadShakaSources: function(){
+            if ($("body").data('shakaSourcesLoaded')){
+                return true;
+            }
+            function onSourcesLoaded(){
+                if (typeof(window.shaka) == 'undefined'){
+                    return;
+                }
+                shaka.polyfill.installAll();
+                $("body").data('shakaSourcesLoaded', true)
+                    .trigger('shakaSourcesLoaded')
+                    .off('player_embedder_sources_loaded', this);
+            }
+            $("body").on('player_embedder_sources_loaded', onSourcesLoaded);
+            playerEmbedder.loadSources('shaka');
+            return false;
+        },
         streamSrc: function(base_url){
             var d = {
               base_url: base_url,
               hls_url: [base_url, 'playlist.m3u8'].join('/'),
               hds_url: [base_url, 'manifest.f4m'].join('/'),
+              mpd_url: [base_url, 'manifest.mpd'].join('/'),
             };
             return d;
         },
@@ -253,6 +274,28 @@
             }
             return result;
         },
+        testMPDSupport: function(data){
+            this.debug('testing MPEG-DASH support');
+            var result;
+            function doTest(){
+                var self = playerEmbedder;
+                if (shaka.player.Player.isBrowserSupported()){
+                    self.debug('Browser supports MPEG-DASH');
+                    return true;
+                } else {
+                    self.debug('Browser does not support MPEG-DASH');
+                    return false;
+                }
+            }
+            if (this.loadShakaSources()){
+                return doTest();
+            } else {
+                $("body").one('shakaSourcesLoaded', function(){
+                    result = doTest();
+                });
+            }
+            return result;
+        },
         doEmbed: function(data){
             var self = this,
                 embed_fn;
@@ -281,21 +324,33 @@
             return embed_fn(data);
         },
         doEmbed_auto: function(data){
-            var self = playerEmbedder,
-                hlsSupported = self.testHLSSupport(data),
-                embed_fn;
-
-            if (hlsSupported){
-                data.embed_method = self.html5_embed_method;
-                embed_fn = self['doEmbed_' + data.embed_method];
-                data = embed_fn(data);
+            function do_theEmbed(data){
+                var self = playerEmbedder,
+                    hlsSupported = self.testHLSSupport(data),
+                    embed_fn;
+                if (hlsSupported){
+                    data.embed_method = self.html5_embed_method;
+                    embed_fn = self['doEmbed_' + data.embed_method];
+                    data = embed_fn(data);
+                } else if (self.testMPDSupport(data)){
+                    data.embed_method = 'shaka';
+                    data = self.doEmbed_shaka(data);
+                } else {
+                    data.embed_method = 'strobe';
+                    data = self.doEmbed_strobe(data);
+                }
+                return data;
+            }
+            if (playerEmbedder.loadShakaSources()){
+                return do_theEmbed(data);
             } else {
-                data.embed_method = 'strobe';
-                data = self.doEmbed_strobe(data);
+                $("body").one('shakaSourcesLoaded', function(){
+                    do_theEmbed(data);
+                });
             }
             return data;
         },
-        doEmbed_html5: function(data){
+        buildVidTag: function(data){
             var self = playerEmbedder,
                 vidtag = $("video", data.container);
             if (vidtag.length == 0){
@@ -311,6 +366,11 @@
             vidtag.attr('height', data.size[1]);
             self.addPlayerClasses(vidtag, data);
             vidtag[0].controls = true;
+            return vidtag;
+        },
+        doEmbed_html5: function(data){
+            var self = playerEmbedder,
+                vidtag = self.buildVidTag(data);
             vidtag.append('<source src="URL" type="application/vnd.apple.mpegurl">'.replace('URL', data.streamSrc.hls_url));
             data.player = vidtag;
             fbdiv = self.buildFallbackContent(data);
@@ -318,6 +378,31 @@
                 data.container.parent().append(fbdiv);
             }
             data.container.trigger('player_embed_complete');
+            return data;
+        },
+        doEmbed_shaka: function(data){
+            function doEmbed(data){
+                var self = playerEmbedder,
+                    vidtag = self.buildVidTag(data),
+                    player,
+                    estimator,
+                    source;
+                vidtag.attr('crossorigin', 'anonymous');
+                player = new shaka.player.Player(vidtag.get(0));
+                estimator = new shaka.util.EWMABandwidthEstimator();
+                source = new shaka.player.DashVideoSource(data.streamSrc.mpd_url, null, estimator);
+                player.load(source);
+                data.player = player;
+                data.container.trigger('player_embed_complete');
+                return data;
+            }
+            if (playerEmbedder.loadShakaSources()){
+                return doEmbed(data);
+            } else {
+                $("body").one('shakaSourcesLoaded', function(){
+                    doEmbed(data);
+                });
+            }
             return data;
         },
         doEmbed_videojs: function(data){
