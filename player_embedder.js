@@ -391,6 +391,9 @@
                 player = new shaka.player.Player(vidtag.get(0));
                 estimator = new shaka.util.EWMABandwidthEstimator();
                 source = new shaka.player.DashVideoSource(data.streamSrc.mpd_url, null, estimator);
+                player.addEventListener('error', function(e){
+                    data.container.trigger('player_error', [player, e]);
+                });
                 player.load(source);
                 data.player = player;
                 data.container.trigger('player_embed_complete');
