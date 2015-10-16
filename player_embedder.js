@@ -68,7 +68,8 @@
             var self = this,
                 cssComplete = false,
                 scriptsComplete = false,
-                loadedSources = $("body").data('player_embedder_sources_loaded');
+                loadedSources = $("body").data('player_embedder_sources_loaded'),
+                dfd = $.Deferred();
             self.debug('loading sources');
             if (typeof(loadedSources) == 'undefined'){
                 loadedSources = {};
@@ -127,12 +128,13 @@
                     self.debug('all sources loaded');
                     $("body").trigger('player_embedder_sources_loaded', [libName]);
                 }
+                dfd.resolve(libName);
             }
             if (loadedSources[libName]){
                 cssComplete = true;
                 scriptsComplete = true;
                 doComplete();
-                return;
+                return dfd.promise();
             }
             $("body").one('player_embedder_css_loaded', function(){
                 self.debug('css loaded');
@@ -146,23 +148,48 @@
             });
             loadCss();
             loadJs();
+            return dfd.promise();
         },
         loadShakaSources: function(){
-            if ($("body").data('shakaSourcesLoaded')){
+            var dfd = $.Deferred();
+            function isShakaLoaded(){
+                var loadedSources = $("body").data('player_embedder_sources_loaded');
+                if ($("body").data('shakaSourcesLoaded')){
+                    return true;
+                }
+                if (typeof(loadedSources) == 'undefined'){
+                    return false;
+                }
+                if (!loadedSources.shaka){
+                    return false;
+                }
+                if (typeof(window.shaka) == 'undefined'){
+                    return false;
+                }
                 return true;
             }
-            function onSourcesLoaded(){
-                if (typeof(window.shaka) == 'undefined'){
-                    return;
-                }
+            function initShaka(){
+                console.log('initShaka');
                 shaka.polyfill.installAll();
-                $("body").data('shakaSourcesLoaded', true)
-                    .trigger('shakaSourcesLoaded')
-                    .off('player_embedder_sources_loaded', this);
+                $("body").data('shakaSourcesLoaded', true);
+                dfd.resolve();
             }
-            $("body").on('player_embedder_sources_loaded', onSourcesLoaded);
-            playerEmbedder.loadSources('shaka');
-            return false;
+            function waitForShaka(){
+                if (isShakaLoaded()){
+                    initShaka();
+                } else {
+                    console.log('waiting for shaka');
+                    window.setTimeout(waitForShaka, 10);
+                }
+            }
+            if (isShakaLoaded()){
+                dfd.resolve();
+                return dfd.promise();
+            }
+            playerEmbedder.loadSources('shaka').done(function(){
+                waitForShaka();
+            });
+            return dfd.promise();
         },
         streamSrc: function(base_url){
             var d = {
@@ -276,7 +303,8 @@
         },
         testMPDSupport: function(data){
             this.debug('testing MPEG-DASH support');
-            var result;
+            var result,
+                dfd = $.Deferred();
             function doTest(){
                 var self = playerEmbedder;
                 if (shaka.player.Player.isBrowserSupported()){
@@ -287,14 +315,15 @@
                     return false;
                 }
             }
-            if (this.loadShakaSources()){
-                return doTest();
-            } else {
-                $("body").one('shakaSourcesLoaded', function(){
-                    result = doTest();
-                });
-            }
-            return result;
+            this.loadShakaSources().done(function(){
+                result = doTest();
+                if (result){
+                    dfd.resolve();
+                } else {
+                    dfd.reject();
+                }
+            });
+            return dfd.promise();
         },
         doEmbed: function(data){
             var self = this,
@@ -324,31 +353,28 @@
             return embed_fn(data);
         },
         doEmbed_auto: function(data){
-            function do_theEmbed(data){
-                var self = playerEmbedder,
-                    hlsSupported = self.testHLSSupport(data),
-                    embed_fn;
-                if (hlsSupported){
-                    data.embed_method = self.html5_embed_method;
-                    embed_fn = self['doEmbed_' + data.embed_method];
-                    data = embed_fn(data);
-                } else if (self.testMPDSupport(data)){
+            var self = playerEmbedder,
+                hlsSupported = self.testHLSSupport(data),
+                embed_fn,
+                dfd = $.Deferred();
+            if (hlsSupported){
+                data.embed_method = self.html5_embed_method;
+                embed_fn = self['doEmbed_' + data.embed_method];
+                data = embed_fn(data);
+                dfd.resolve(data);
+            } else {
+                self.testMPDSupport(data).done(function(){
                     data.embed_method = 'shaka';
-                    data = self.doEmbed_shaka(data);
-                } else {
+                    self.doEmbed_shaka(data).done(function(data){
+                        dfd.resolve(data);
+                    });
+                }).fail(function(){
                     data.embed_method = 'strobe';
                     data = self.doEmbed_strobe(data);
-                }
-                return data;
-            }
-            if (playerEmbedder.loadShakaSources()){
-                return do_theEmbed(data);
-            } else {
-                $("body").one('shakaSourcesLoaded', function(){
-                    do_theEmbed(data);
+                    dfd.resolve(data);
                 });
             }
-            return data;
+            return dfd.promise();
         },
         buildVidTag: function(data){
             var self = playerEmbedder,
@@ -381,6 +407,7 @@
             return data;
         },
         doEmbed_shaka: function(data){
+            var dfd = $.Deferred();
             function doEmbed(data){
                 var self = playerEmbedder,
                     vidtag = self.buildVidTag(data),
@@ -397,16 +424,12 @@
                 player.load(source);
                 data.player = player;
                 data.container.trigger('player_embed_complete');
-                return data;
+                dfd.resolve(data);
             }
-            if (playerEmbedder.loadShakaSources()){
-                return doEmbed(data);
-            } else {
-                $("body").one('shakaSourcesLoaded', function(){
-                    doEmbed(data);
-                });
-            }
-            return data;
+            playerEmbedder.loadShakaSources().done(function(){
+                doEmbed(data);
+            });
+            return dfd.promise();
         },
         doEmbed_videojs: function(data){
             var self = playerEmbedder;
