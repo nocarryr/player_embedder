@@ -80,7 +80,7 @@
                 var numResponse = 0,
                     urls = self.cssUrls[libName];
                 if (!urls || urls.length == 0){
-                    $("body").trigger('player_embedder_css_loaded');
+                    $("body").trigger('player_embedder_css_loaded', [libName]);
                     return;
                 }
                 self.debug('loading css');
@@ -95,7 +95,7 @@
                         $("body").append(s);
                         numResponse += 1;
                         if (numResponse == urls.length){
-                            $("body").trigger('player_embedder_css_loaded');
+                            $("body").trigger('player_embedder_css_loaded', [libName]);
                         }
                     });
                 });
@@ -104,7 +104,7 @@
                 var numResponse = 0,
                     urls = self.scriptUrls[libName];
                 if (!urls || urls.length == 0){
-                    $("body").trigger('player_embedder_scripts_loaded');
+                    $("body").trigger('player_embedder_scripts_loaded', [libName]);
                     return;
                 }
                 self.debug('loading js');
@@ -116,7 +116,7 @@
                     $.getScript(url, function(){
                         numResponse += 1;
                         if (numResponse == urls.length){
-                            $("body").trigger('player_embedder_scripts_loaded');
+                            $("body").trigger('player_embedder_scripts_loaded', [libName]);
                         }
                     });
                 });
@@ -125,7 +125,7 @@
                 loadedSources[libName] = true;
                 if (cssComplete && scriptsComplete){
                     self.debug('all sources loaded');
-                    $("body").trigger('player_embedder_sources_loaded');
+                    $("body").trigger('player_embedder_sources_loaded', [libName]);
                 }
             }
             if (loadedSources[libName]){
