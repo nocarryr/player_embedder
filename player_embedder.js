@@ -151,7 +151,8 @@
             return dfd.promise();
         },
         loadShakaSources: function(){
-            var dfd = $.Deferred();
+            var dfd = $.Deferred(),
+                startTime = new Date();
             function isShakaLoaded(){
                 var loadedSources = $("body").data('player_embedder_sources_loaded');
                 if ($("body").data('shakaSourcesLoaded')){
@@ -175,11 +176,14 @@
                 dfd.resolve();
             }
             function waitForShaka(){
-                if (isShakaLoaded()){
+                var now = new Date();
+                if (now - startTime > 10000){
+                    dfd.reject();
+                } else if (isShakaLoaded()){
                     initShaka();
                 } else {
                     console.log('waiting for shaka');
-                    window.setTimeout(waitForShaka, 10);
+                    window.setTimeout(waitForShaka, 100);
                 }
             }
             if (isShakaLoaded()){
