@@ -384,7 +384,7 @@
             var self = playerEmbedder,
                 vidtag = $("video", data.container);
             if (vidtag.length == 0){
-                vidtag = $('<video></video>');
+                vidtag = $('<video autoplay></video>');
                 data.container.append(vidtag);
             }
             vidtag.attr('id', data.playerId);
