@@ -3,12 +3,16 @@
         embed_methods: ['auto', 'html5', 'shaka', 'strobe'],
         html5_embed_method: 'html5',
         libRootUrls: {
+            'all':'player_embedder',
             'strobe':'/strobe-media',
         },
         cssUrls: {
             //'strobe':[
                 //'_ROOTURL_STROBE_/jquery.strobemediaplayback.css',
             //],
+            'all':[
+                '_ROOTURL_ALL_/player_embedder.css',
+            ]
         },
         scriptUrls: {
             'strobe':[
@@ -68,6 +72,9 @@
                 $("body").data('player_embedder_sources_loaded', loadedSources);
             } else {
                 self.debug('sources already loaded: ', loadedSources);
+            }
+            if (libName != 'all' && !loadedSources.all){
+                self.loadSources('all');
             }
             function loadCss(){
                 var numResponse = 0,
@@ -373,11 +380,18 @@
         },
         buildVidTag: function(data){
             var self = playerEmbedder,
-                vidtag = $("video", data.container);
+                vidtag = $("video", data.container),
+                overlay = $(".player_embedder-overlay", data.container);
             if (vidtag.length == 0){
                 vidtag = $('<video autoplay></video>');
                 data.container.append(vidtag);
             }
+            if (overlay.length == 0){
+                overlay = $('<div class="player_embedder-overlay"></div>');
+                data.container.append(overlay);
+            }
+            data.overlay = overlay;
+            vidtag.addClass('player_embedder-video');
             vidtag.attr('id', data.playerId);
             if (data.sizeWithContainer == true){
                 data.size = ['100%', '100%'];
@@ -388,6 +402,20 @@
             self.addPlayerClasses(vidtag, data);
             vidtag[0].controls = true;
             return vidtag;
+        },
+        showOverlayMessage: function(data, message){
+            var vidtag = $("video", data.container),
+                overlay = data.overlay;
+            overlay
+                .empty()
+                .append('<p>' + message + '</p>')
+                .innerWidth(data.container.innerWidth())
+                .innerHeight(data.container.innerHeight())
+                .css(vidtag.position())
+                .show();
+        },
+        hideOverlay: function(){
+            $(".player_embedder-overlay").hide();
         },
         doEmbed_html5: function(data){
             var self = playerEmbedder,
@@ -415,6 +443,14 @@
                 source = new shaka.player.DashVideoSource(data.streamSrc.mpd_url, null, estimator);
                 player.addEventListener('error', function(e){
                     data.container.trigger('player_error', [player, e]);
+                    if (e.detail.status == 404){
+                        var msg = 'There was an error playing the requested content.  Please check your connection or refresh the page';
+                        self.showOverlayMessage(data, msg);
+                        data.overlay.click(function(e){
+                            e.preventDefault();
+                            self.hideOverlay();
+                        });
+                    }
                 });
                 player.load(source);
                 data.player = player;
