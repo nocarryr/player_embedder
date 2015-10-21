@@ -288,7 +288,7 @@
         testHLSSupport: function(data){
             this.debug('testing HLS capabilities');
             var result = false,
-                vidtag = $('<video></video>');
+                vidtag = $('<video autoplay></video>');
             try {
                 data.container.append(vidtag);
                 if (vidtag[0].canPlayType('application/vnd.apple.mpegurl') != ''){
@@ -602,9 +602,10 @@
             data.player.width(data.size[0]);
             data.player.height(data.size[1]);
         },
-        doResize_videojs: function(data){
-            data.player.width(data.size[0]);
-            data.player.height(data.size[1]);
+        doResize_shaka: function(data){
+            var player = $("#" + data.playerId);
+            player.width(data.size[0]);
+            player.height(data.size[1]);
         },
         doResize_strobe: function(data){
             // need to look at api docs
