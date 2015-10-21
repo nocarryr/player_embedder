@@ -5,7 +5,8 @@
 }
 .player_embedder-overlay-content{
     text-align: center;
-    background-color: rgba(221, 221, 221, 0.3);
+    background-color: rgba(0, 0, 0, 0.32);
+    padding-bottom: 4px;
 }
 
 .player_embedder-overlay p{
