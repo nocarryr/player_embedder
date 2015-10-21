@@ -1,24 +1,16 @@
 (function($){
     var playerEmbedder = {
-        embed_methods: ['auto', 'html5', 'shaka', 'videojs', 'strobe'],
+        embed_methods: ['auto', 'html5', 'shaka', 'strobe'],
         html5_embed_method: 'html5',
         libRootUrls: {
-            'videojs':'/videojs',
             'strobe':'/strobe-media',
         },
         cssUrls: {
-            'videojs':[
-                '//vjs.zencdn.net/4.5/video-js.css',
-            ],
             //'strobe':[
                 //'_ROOTURL_STROBE_/jquery.strobemediaplayback.css',
             //],
         },
         scriptUrls: {
-            'videojs':[
-                '//vjs.zencdn.net/4.5/video.js',
-                //'_ROOTURL_VIDEOJS_/videojs.hls.min.js',
-            ],
             'strobe':[
                 '//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js',
                 //'_ROOTURL_STROBE_/jquery.strobemediaplayback.js',
@@ -362,9 +354,8 @@
                 embed_fn,
                 dfd = $.Deferred();
             if (hlsSupported){
-                data.embed_method = self.html5_embed_method;
-                embed_fn = self['doEmbed_' + data.embed_method];
-                data = embed_fn(data);
+                data.embed_method = 'html5'
+                data = self.doEmbed_html5(data);
                 dfd.resolve(data);
             } else {
                 self.testMPDSupport(data).done(function(){
@@ -434,33 +425,6 @@
                 doEmbed(data);
             });
             return dfd.promise();
-        },
-        doEmbed_videojs: function(data){
-            var self = playerEmbedder;
-            $("body").one('player_embedder_sources_loaded', function(){
-                var vidtag = $("video", data.container),
-                    opts = {
-                      'controls': true,
-                      'autoplay': true,
-                      'width':data.size[0],
-                      'height':data.size[1],
-                      'nativeControlsForTouch': false,
-                    };
-                if (vidtag.length == 0){
-                    vidtag = $('<video></video>');
-                    data.container.append(vidtag);
-                }
-                self.addPlayerClasses(vidtag, data);
-                vidtag.addClass('video-js vjs-default-skin');
-                vidtag.attr('id', data.playerId);
-                vidtag.append('<source src="URL" type="application/vnd.apple.mpegurl">'.replace('URL', data.streamSrc.hls_url));
-                videojs(data.playerId, opts, function(){
-                    data.player = this;
-                    data.container.trigger('player_embed_complete');
-                });
-            });
-            self.loadSources('videojs');
-            return data
         },
         doEmbed_strobe: function(data){
             var self = playerEmbedder,
