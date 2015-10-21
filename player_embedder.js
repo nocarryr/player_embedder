@@ -405,14 +405,24 @@
         },
         showOverlayMessage: function(data, message){
             var vidtag = $("video", data.container),
-                overlay = data.overlay;
+                overlay = data.overlay,
+                $content;
+            if (message.jquery){
+                $content = message;
+            } else {
+                $content = $('<p>' + message + '</p>');
+            }
+            $content.addClass('player_embedder-overlay-content');
             overlay
                 .empty()
-                .append('<p>' + message + '</p>')
+                .append($content)
                 .innerWidth(data.container.innerWidth())
                 .innerHeight(data.container.innerHeight())
                 .css(vidtag.position())
-                .show();
+                .show()
+                .click(function(){
+                    $content.parent().hide();
+                });
         },
         hideOverlay: function(){
             $(".player_embedder-overlay").hide();
