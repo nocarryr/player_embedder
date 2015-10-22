@@ -362,8 +362,9 @@
                 dfd = $.Deferred();
             if (hlsSupported){
                 data.embed_method = 'html5'
-                data = self.doEmbed_html5(data);
-                dfd.resolve(data);
+                self.doEmbed_html5(data).done(function(data){
+                    dfd.resolve(data);
+                });
             } else {
                 self.testMPDSupport(data).done(function(){
                     data.embed_method = 'shaka';
@@ -372,8 +373,9 @@
                     });
                 }).fail(function(){
                     data.embed_method = 'strobe';
-                    data = self.doEmbed_strobe(data);
-                    dfd.resolve(data);
+                    self.doEmbed_strobe(data).done(function(data){
+                        dfd.resolve(data);
+                    });
                 });
             }
             return dfd.promise();
@@ -429,7 +431,8 @@
         },
         doEmbed_html5: function(data){
             var self = playerEmbedder,
-                vidtag = self.buildVidTag(data);
+                vidtag = self.buildVidTag(data),
+                dfd = $.Deferred();
             vidtag.append('<source src="URL" type="application/vnd.apple.mpegurl">'.replace('URL', data.streamSrc.hls_url));
             data.player = vidtag;
             fbdiv = self.buildFallbackContent(data);
@@ -437,7 +440,8 @@
                 data.container.parent().append(fbdiv);
             }
             data.container.trigger('player_embed_complete');
-            return data;
+            dfd.resolve(data);
+            return dfd.promise();
         },
         doEmbed_shaka: function(data){
             var dfd = $.Deferred();
@@ -474,6 +478,7 @@
         },
         doEmbed_strobe: function(data){
             var self = playerEmbedder,
+                dfd = $.Deferred(),
                 embedDataKeys = ['swf', 'id', 'width', 'height', 'minimumFlashPlayerVersion', 'expressInstallSwfUrl'],
                 embedData = [],
                 flashVars = {
@@ -580,10 +585,11 @@
                 } else {
                     embedDynamic(playerWrapper);
                 }
+                dfd.resolve(data);
             });
             self.debug('loading strobe sources');
             self.loadSources('strobe');
-            return data;
+            return dfd.promise();
         },
         doResize: function(container, newSize){
             var self = this,
