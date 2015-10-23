@@ -1,0 +1,21 @@
+.player_embedder-overlay{
+    position: absolute;
+    z-index: 2147483647;
+    background-color: rgba(0,0,0,0);
+}
+.player_embedder-overlay-content{
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.32);
+    padding-bottom: 4px;
+}
+
+.player_embedder-overlay p{
+    color: #FFF;
+    font-size: 1.5em;
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
+.player_embedder-video{
+    z-index: 1;
+}
