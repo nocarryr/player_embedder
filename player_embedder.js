@@ -309,14 +309,24 @@
             var result,
                 dfd = $.Deferred();
             function doTest(){
-                var self = playerEmbedder;
+                var self = playerEmbedder,
+                    isSupported = false;
                 if (shaka.player.Player.isBrowserSupported()){
-                    self.debug('Browser supports MPEG-DASH');
-                    return true;
+                    self.debug('Browser possibly supports MPEG-DASH...');
+                    try {
+                        if (shaka.player.Player.isTypeSupported('video/mp4; codecs="avc1.42E01E"')){
+                            isSupported = true;
+                        }
+                    } catch(e) {
+                        self.debug('The browser lied');
+                    }
+                }
+                if (isSupported){
+                    self.debug('Browser support for MPEG-DASH confirmed');
                 } else {
                     self.debug('Browser does not support MPEG-DASH');
-                    return false;
                 }
+                return isSupported;
             }
             this.loadShakaSources().done(function(){
                 result = doTest();
