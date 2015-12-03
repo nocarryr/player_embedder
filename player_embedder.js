@@ -466,6 +466,7 @@
                 estimator = new shaka.util.EWMABandwidthEstimator();
                 source = new shaka.player.DashVideoSource(data.streamSrc.mpd_url, null, estimator);
                 player.addEventListener('error', function(e){
+                    self.debug('Shaka Error', e.type, e.detail);
                     data.container.trigger('player_error', [player, e]);
                     if (e.detail.status == 404){
                         var msg = 'There was an error playing the requested content.  Please check your connection or refresh the page';
