@@ -33,6 +33,7 @@
             }
             if (typeof(this.firstDebugTimestamp) == 'undefined'){
                 this.firstDebugTimestamp = new Date();
+                this.debug('Log Start: ', this.firstDebugTimestamp.toString());
             }
             var args = [new Date() - this.firstDebugTimestamp, 'playerEmbedder'];
             $.each(arguments, function(i, arg){
