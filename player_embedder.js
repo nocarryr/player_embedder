@@ -389,6 +389,11 @@
                     data.embed_method = 'shaka';
                     self.doEmbed_shaka(data).done(function(data){
                         dfd.resolve(data);
+                    }).fail(function(){
+                        data.embed_method = 'strobe';
+                        self.doEmbed_strobe(data).done(function(data){
+                            dfd.resolve(data);
+                        });
                     });
                 }).fail(function(){
                     data.embed_method = 'strobe';
@@ -487,10 +492,15 @@
                         });
                     }
                 });
-                player.load(source);
-                data.player = player;
-                data.container.trigger('player_embed_complete');
-                dfd.resolve(data);
+                player.load(source).then(function(){
+                    data.player = player;
+                    data.container.trigger('player_embed_complete');
+                    self.debug('Shaka player load complete');
+                    dfd.resolve(data);
+                }).catch(function(){
+                    self.debug('Shaka player load error');
+                    dfd.reject();
+                });
             }
             playerEmbedder.loadShakaSources().done(function(){
                 doEmbed(data);
