@@ -195,12 +195,20 @@
             return dfd.promise();
         },
         streamSrc: function(base_url){
-            var d = {
-              base_url: base_url,
-              hls_url: [base_url, 'playlist.m3u8'].join('/'),
-              hds_url: [base_url, 'manifest.f4m'].join('/'),
-              mpd_url: [base_url, 'manifest.mpd'].join('/'),
-            };
+            var defaults = {
+                  hls_url: 'playlist.m3u8',
+                  hds_url: 'manifest.f4m',
+                  mpd_url: 'manifest.mpd',
+              },
+              d = {base_url: base_url};
+            $.each(defaults, function(key, val){
+                if (base_url.endsWith(val.split('.')[1])){
+                    val = base_url;
+                } else {
+                    val = [base_url, val].join('/');
+                }
+                d[key] = val;
+            });
             return d;
         },
         embedDataDefaults: {
