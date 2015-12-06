@@ -337,14 +337,27 @@
                 }
                 return isSupported;
             }
-            this.loadShakaSources().done(function(){
-                result = doTest();
-                if (result){
-                    dfd.resolve();
-                } else {
+
+            // Temporarily blacklist Firefox 42+ due to many issues reported.
+            // Future testing required, but since it passes all tests and
+            // playback issues persist, don't allow it.
+            var userAgent = navigator.userAgent;
+            if (userAgent.indexOf('Firefox/') != -1){
+                userAgent = userAgent.split('Firefox/')[1];
+                if (parseFloat(userAgent) >= 42.0){
+                    this.debug('Firefox >= 42 detected, skipping DASH tests');
                     dfd.reject();
                 }
-            });
+            } else {
+              this.loadShakaSources().done(function(){
+                  result = doTest();
+                  if (result){
+                      dfd.resolve();
+                  } else {
+                      dfd.reject();
+                  }
+              });
+            }
             return dfd.promise();
         },
         doEmbed: function(data){
