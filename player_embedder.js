@@ -201,9 +201,15 @@
                   hds_url: 'manifest.f4m',
                   mpd_url: 'manifest.mpd',
               },
-              d = {base_url: base_url};
+              d = {base_url: base_url},
+              endsWith = function(sourceStr, searchStr){
+                  if (typeof String.prototype.endsWith === 'function'){
+                      return sourceStr.endsWith(searchStr);
+                  }
+                  return sourceStr.indexOf(searchStr, sourceStr.length - searchStr.length) !== -1;
+              };
             $.each(defaults, function(key, val){
-                if (base_url.endsWith(val.split('.')[1])){
+                if (endsWith(base_url, val.split('.')[1])){
                     val = base_url;
                 } else {
                     val = [base_url, val].join('/');
