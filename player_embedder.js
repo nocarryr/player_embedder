@@ -158,13 +158,13 @@
                 if ($("body").data('shakaSourcesLoaded')){
                     return true;
                 }
+                if (typeof(window.shaka) != 'undefined'){
+                    return true;
+                }
                 if (typeof(loadedSources) == 'undefined'){
                     return false;
                 }
                 if (!loadedSources.shaka){
-                    return false;
-                }
-                if (typeof(window.shaka) == 'undefined'){
                     return false;
                 }
                 return true;
@@ -187,6 +187,9 @@
                 }
             }
             if (isShakaLoaded()){
+                if (!$("body").data('shakaSourcesLoaded')){
+                    initShaka();
+                }
                 dfd.resolve();
                 return dfd.promise();
             }
