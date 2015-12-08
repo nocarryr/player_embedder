@@ -167,7 +167,7 @@
                 if (!loadedSources.shaka){
                     return false;
                 }
-                return true;
+                return (typeof(window.shaka) != 'undefined');
             }
             function initShaka(){
                 console.log('initShaka');
