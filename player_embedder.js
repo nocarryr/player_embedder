@@ -613,7 +613,8 @@
                 embedData.push(val);
             });
             embedData.push(flashVars, params, attrs, embedCallback);
-            $("body").one('player_embedder_sources_loaded', function(){
+            self.debug('loading strobe sources');
+            self.loadSources('strobe').done(function(){
                 self.debug('beginning swfobject embed');
                 var playerWrapper = $('<div id="ID-wrapper"></div>'.replace('ID', data.playerId)),
                     flashVer,
@@ -640,8 +641,6 @@
                 }
                 dfd.resolve(data);
             });
-            self.debug('loading strobe sources');
-            self.loadSources('strobe');
             return dfd.promise();
         },
         doResize: function(container, newSize){
