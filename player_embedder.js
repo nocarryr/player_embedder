@@ -80,7 +80,7 @@
             function loadCss(){
                 var numResponse = 0,
                     urls = self.cssUrls[libName];
-                if (!urls || urls.length == 0){
+                if (!urls || urls.length === 0){
                     $("body").trigger('player_embedder_css_loaded', [libName]);
                     return;
                 }
@@ -104,7 +104,7 @@
             function loadJs(){
                 var numResponse = 0,
                     urls = self.scriptUrls[libName];
-                if (!urls || urls.length == 0){
+                if (!urls || urls.length === 0){
                     $("body").trigger('player_embedder_scripts_loaded', [libName]);
                     return;
                 }
@@ -251,7 +251,7 @@
             return d;
         },
         addPlayerClasses: function(player, data){
-            if (data.playerClasses.length == 0){
+            if (data.playerClasses.length === 0){
                 return;
             }
             player.addClass(data.playerClasses.join(' '));
@@ -309,7 +309,7 @@
                 vidtag = $('<video autoplay></video>');
             try {
                 data.container.append(vidtag);
-                if (vidtag[0].canPlayType('application/vnd.apple.mpegurl') != ''){
+                if (vidtag[0].canPlayType('application/vnd.apple.mpegurl') !== ''){
                     result = true;
                     this.debug('HLS supported');
                 } else {
@@ -383,7 +383,7 @@
                 }
             }
     */
-            if (typeof(data.container) == 'undefined' || data.container == null){
+            if (typeof(data.container) == 'undefined' || data.container === null){
                 data.container = $("body");
             }
             data = self.embedData(data);
@@ -403,7 +403,7 @@
                 dfd = $.Deferred(),
                 origSize = [data.size[0], data.size[1]];
             if (hlsSupported){
-                data.embed_method = 'html5'
+                data.embed_method = 'html5';
                 self.doEmbed_html5(data).done(function(data){
                     dfd.resolve(data);
                 });
@@ -435,18 +435,18 @@
             var self = playerEmbedder,
                 vidtag = $("video", data.container),
                 overlay = $(".player_embedder-overlay", data.container);
-            if (vidtag.length == 0){
+            if (vidtag.length === 0){
                 vidtag = $('<video autoplay></video>');
                 data.container.append(vidtag);
             }
-            if (overlay.length == 0){
+            if (overlay.length === 0){
                 overlay = $('<div class="player_embedder-overlay"></div>');
                 data.container.append(overlay);
             }
             data.overlay = overlay;
             vidtag.addClass('player_embedder-video');
             vidtag.attr('id', data.playerId);
-            if (data.sizeWithContainer == true){
+            if (data.sizeWithContainer === true){
                 data.size = ['100%', '100%'];
                 data.sizeByCSS = true;
             }
@@ -586,7 +586,7 @@
                             }
                             $objElem.append('<param name="KEY" value="VAL" />'.replace('KEY', key).replace('VAL', val));
                         });
-                    };
+                    }
                     buildParams(player);
                     innerObj.attr({'data':flashVars.swf, 'width':data.size[0], 'height':data.size[1]});
                     player.append(innerObj);
@@ -676,7 +676,7 @@
             var self = this,
                 data = container.data('embedData'),
                 resizeFn = playerEmbedder['doResize_' + data.embed_method];
-            if (data.sizeByCSS == true){
+            if (data.sizeByCSS === true){
                 return;
             }
             if (!data.player){
@@ -708,7 +708,7 @@
             // need to look at api docs
         },
         calcPlayerSize: function(data){
-            if (data.sizeByCSS == true){
+            if (data.sizeByCSS === true){
                 return false;
             }
             function getMaxWidth(){
@@ -724,7 +724,7 @@
                 xMin = x * 0.5,
                 y,
                 ratio = data.aspect_ratio[0] / data.aspect_ratio[1];
-            if (data.sizeWithContainer == true){
+            if (data.sizeWithContainer === true){
                 x = data.container.innerWidth();
                 y = data.container.innerHeight();
                 if (data.size){
