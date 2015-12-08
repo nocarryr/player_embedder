@@ -609,6 +609,24 @@
                     } catch(e) {
                         self.debug('swfobject error: ', e);
                     }
+                },
+                waitForSwfObject = function(){
+                    var _dfd = $.Deferred(),
+                        startTime = new Date();
+                    function doWait(){
+                        var now = new Date();
+                        console.log(now - startTime);
+                        if (now - startTime > 10000){
+                            _dfd.reject();
+                        } else if (typeof(window.swfobject) != 'undefined'){
+                            _dfd.resolve();
+                        } else {
+                            console.log('waiting for swfobject');
+                            window.setTimeout(doWait, 100);
+                        }
+                    }
+                    doWait();
+                    return _dfd.promise();
                 };
             $.each(embedDataKeys, function(i, key){
                 var val = flashVars[key];
@@ -620,6 +638,7 @@
             embedData.push(flashVars, params, attrs, embedCallback);
             self.debug('loading strobe sources');
             self.loadSources('strobe').done(function(){
+              waitForSwfObject().done(function(){
                 self.debug('beginning swfobject embed');
                 var playerWrapper = $('<div id="ID-wrapper"></div>'.replace('ID', data.playerId)),
                     flashVer,
@@ -645,6 +664,7 @@
                     embedDynamic(playerWrapper);
                 }
                 dfd.resolve(data);
+              });
             });
             return dfd.promise();
         },
