@@ -524,9 +524,13 @@
                     data.container.trigger('player_embed_complete');
                     self.debug('Shaka player load complete');
                     dfd.resolve(data);
-                }).catch(function(){
-                    self.debug('Shaka player load error');
-                    dfd.reject();
+                }).catch(function(e){
+                    self.debug('Shaka player load error', e);
+                    if (e.type == 'net' && e.message == 'Network failure.'){
+                        dfd.resolve();
+                    } else {
+                        dfd.reject();
+                    }
                 });
             }
             playerEmbedder.loadShakaSources().done(function(){
