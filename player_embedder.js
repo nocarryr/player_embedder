@@ -400,7 +400,8 @@
             var self = playerEmbedder,
                 hlsSupported = self.testHLSSupport(data),
                 embed_fn,
-                dfd = $.Deferred();
+                dfd = $.Deferred(),
+                origSize = [data.size[0], data.size[1]];
             if (hlsSupported){
                 data.embed_method = 'html5'
                 self.doEmbed_html5(data).done(function(data){
@@ -412,12 +413,16 @@
                     self.doEmbed_shaka(data).done(function(data){
                         dfd.resolve(data);
                     }).fail(function(){
+                        data.container.empty();
+                        data.size = origSize;
                         data.embed_method = 'strobe';
                         self.doEmbed_strobe(data).done(function(data){
                             dfd.resolve(data);
                         });
                     });
                 }).fail(function(){
+                    data.container.empty();
+                    data.size = origSize;
                     data.embed_method = 'strobe';
                     self.doEmbed_strobe(data).done(function(data){
                         dfd.resolve(data);
