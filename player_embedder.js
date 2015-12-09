@@ -357,6 +357,9 @@
                     this.debug('Firefox >= 42 detected, skipping DASH tests');
                     dfd.reject();
                 }
+            } else if (userAgent.indexOf('MSIE 9') != -1 || userAgent.indexOf('MSIE 8') != -1){
+                this.debug('Old IE version detected, not loading shaka libs');
+                dfd.reject();
             } else {
               this.loadShakaSources().done(function(){
                   result = doTest();
