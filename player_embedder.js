@@ -271,7 +271,7 @@
             }
             if (isDesktop){
                 cdiv.append('<li><p>Flash Player plugin either not installed or out of date.</p></li>');
-                cdiv.append('<li><a href="//www.adobe.com/software/flash/about/‎" taget="_blank">Click Here to update or install Flash</a></li>');
+                cdiv.append('<li><a href="//www.adobe.com/software/flash/about/" taget="_blank">Click Here to update or install Flash</a></li>');
             } else {
                 cdiv.append('<li><a href="URL" type="application/vnd.apple.mpegurl">Click here to open in your mobile device</a></li>'.replace('URL', data.streamSrc.hls_url));
             }
