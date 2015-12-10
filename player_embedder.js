@@ -281,24 +281,6 @@
             }
             if (data.fallbackContentFunction){
                 cdiv = data.fallbackContentFunction(cdiv);
-            } else {
-                data.container.one('player_embed_complete', function(){
-                    $("a", cdiv).each(function(){
-                        var $this = $(this),
-                            s = $this.attr('href'),
-                            firstUnicodeChar;
-                        for (i=1; i<s.length; i++){
-                            if (s.charCodeAt(i) > 255){
-                                firstUnicodeChar = i;
-                                break;
-                            }
-                        }
-                        if (firstUnicodeChar){
-                            s = s.slice(0, firstUnicodeChar);
-                            $this.attr('href', s);
-                        }
-                    });
-                });
             }
             this.debug('fallback content built');
             return cdiv;
