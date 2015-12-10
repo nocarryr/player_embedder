@@ -261,6 +261,11 @@
                 ua = navigator.userAgent,
                 isDesktop = false;
             this.debug('building fallback content');
+            if (data.fallbackContentFunction){
+                cdiv = data.fallbackContentFunction(cdiv);
+                this.debug('fallback content built');
+                return cdiv;
+            }
             try {
                 if (typeof(window.orientation) == 'undefined'){
                     isDesktop = true;
@@ -278,9 +283,6 @@
             if (ua.toLowerCase().search('android') != -1){
                 data.isAndroid = true;
             //    cdiv.append('<li><a href="URL">Click here to open in the video player app on you mobile device</a></li>'.replace('URL', data.streamSrc.hls_url));
-            }
-            if (data.fallbackContentFunction){
-                cdiv = data.fallbackContentFunction(cdiv);
             }
             this.debug('fallback content built');
             return cdiv;
