@@ -344,7 +344,21 @@
             } else if (userAgent.indexOf('MSIE 9') != -1 || userAgent.indexOf('MSIE 8') != -1){
                 this.debug('Old IE version detected, not loading shaka libs');
                 dfd.reject();
-            } else {
+            } else if (userAgent.indexOf('Trident/') != -1){
+                // IE 11 tests currently show Windows 8 not functioning properly
+                // Windows 10 not yet tested
+                if (userAgent.indexOf('Windows NT') != -1){
+                    this.debug('IE detected. Could not fully parse UA string, not loading shaka libs');
+                    dfd.reject();
+                } else {
+                    userAgent = userAgent.split('Windows NT ')[1].split(';')[0];
+                    if (parseFloat(userAgent) < 10.0){
+                        this.debug('IE version ' + userAgent + ' found and not supported');
+                        dfd.reject();
+                    }
+                }
+            }
+            if (dfd.state() != 'rejected'){
               this.loadShakaSources().done(function(){
                   result = doTest();
                   if (result){
