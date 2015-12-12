@@ -352,7 +352,7 @@
                     dfd.reject();
                 } else {
                     userAgent = userAgent.split('Windows NT ')[1].split(';')[0];
-                    if (parseFloat(userAgent) < 10.0){
+                    if (parseFloat(userAgent) < 12.0){
                         this.debug('IE version ' + userAgent + ' found and not supported');
                         dfd.reject();
                     }
