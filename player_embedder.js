@@ -310,6 +310,10 @@
             this.debug('testing MPEG-DASH support');
             var result,
                 dfd = $.Deferred();
+            // Disable shaka entirely for now.
+            dfd.reject();
+            return dfd.promise();
+            
             function doTest(){
                 var self = playerEmbedder,
                     isSupported = false;
