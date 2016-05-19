@@ -20,7 +20,7 @@
                 //'_ROOTURL_STROBE_/jquery.strobemediaplayback.js',
             ],
             'shaka':[
-                '//cdnjs.cloudflare.com/ajax/libs/shaka-player/1.5.0/shaka-player.compiled.js',
+                '//cdnjs.cloudflare.com/ajax/libs/shaka-player/2.0.0-beta2/shaka-player.compiled.js',
             ]
         },
         debugMode: false,
@@ -311,65 +311,34 @@
             var result,
                 dfd = $.Deferred();
             // Disable shaka entirely for now.
-            dfd.reject();
-            return dfd.promise();
-            
+            //dfd.reject();
+            //return dfd.promise();
+
             function doTest(){
                 var self = playerEmbedder,
                     isSupported = false;
-                if (shaka.player.Player.isBrowserSupported()){
-                    self.debug('Browser possibly supports MPEG-DASH...');
-                    try {
-                        if (shaka.player.Player.isTypeSupported('video/mp4; codecs="avc1.42E01E"')){
-                            isSupported = true;
-                        }
-                    } catch(e) {
-                        self.debug('The browser lied');
-                    }
-                }
-                if (isSupported){
-                    self.debug('Browser support for MPEG-DASH confirmed');
-                } else {
-                    self.debug('Browser does not support MPEG-DASH');
-                }
-                return isSupported;
-            }
-
-            // Temporarily blacklist Firefox 42+ due to many issues reported.
-            // Future testing required, but since it passes all tests and
-            // playback issues persist, don't allow it.
-            var userAgent = navigator.userAgent;
-            if (userAgent.indexOf('Firefox/') != -1){
-                userAgent = userAgent.split('Firefox/')[1];
-                if (parseFloat(userAgent) >= 42.0){
-                    this.debug('Firefox >= 42 detected, skipping DASH tests');
-                    dfd.reject();
-                }
-            } else if (userAgent.indexOf('MSIE 9') != -1 || userAgent.indexOf('MSIE 8') != -1){
-                this.debug('Old IE version detected, not loading shaka libs');
-                dfd.reject();
-            } else if (userAgent.indexOf('Trident/') != -1){
-                // IE 11 tests currently show Windows 8 not functioning properly
-                // Windows 10 not yet tested
-                if (userAgent.indexOf('Windows NT') != -1){
-                    this.debug('IE detected. Could not fully parse UA string, not loading shaka libs');
-                    dfd.reject();
-                } else {
-                    userAgent = userAgent.split('Windows NT ')[1].split(';')[0];
-                    if (parseFloat(userAgent) < 12.0){
-                        this.debug('IE version ' + userAgent + ' found and not supported');
+                shaka.Player.support().then(function(support){
+                    if (!support.supported){
+                        self.debug('shaka-player not supported');
+                        dfd.reject();
+                    } else if (support.media['video/mp4; codecs="avc1.42E01E"'] === true){
+                        dfd.resolve();
+                    } else {
                         dfd.reject();
                     }
-                }
+                }).catch(function(){
+                    dfd.reject();
+                });
+            }
+
+            // Only enable for Chrome for now
+            var userAgent = navigator.userAgent;
+            if (userAgent.indexOf('Chrome/') == -1){
+                dfd.reject();
             }
             if (dfd.state() != 'rejected'){
               this.loadShakaSources().done(function(){
-                  result = doTest();
-                  if (result){
-                      dfd.resolve();
-                  } else {
-                      dfd.reject();
-                  }
+                  doTest();
               });
             }
             return dfd.promise();
@@ -508,34 +477,35 @@
                     estimator,
                     source;
                 vidtag.attr('crossorigin', 'anonymous');
-                player = new shaka.player.Player(vidtag.get(0));
-                estimator = new shaka.util.EWMABandwidthEstimator();
-                source = new shaka.player.DashVideoSource(data.streamSrc.mpd_url, null, estimator);
+                player = new shaka.Player(vidtag.get(0));
+                //estimator = new shaka.util.EWMABandwidthEstimator();
+                //source = new shaka.player.DashVideoSource(data.streamSrc.mpd_url, null, estimator);
                 player.addEventListener('error', function(e){
-                    var error = e.detail;
-                    self.debug('Shaka Error', {type:error.type, message:error.message});
+                    //var error = e.detail;
+                    self.debug('Shaka Error', e);
                     data.container.trigger('player_error', [player, e]);
-                    if (e.detail.status == 404){
-                        var msg = 'There was an error playing the requested content.  Please check your connection or refresh the page';
-                        self.showOverlayMessage(data, msg);
-                        data.overlay.click(function(e){
-                            e.preventDefault();
-                            self.hideOverlay();
-                        });
-                    }
+                    // if (e.detail.status == 404){
+                    //     var msg = 'There was an error playing the requested content.  Please check your connection or refresh the page';
+                    //     self.showOverlayMessage(data, msg);
+                    //     data.overlay.click(function(e){
+                    //         e.preventDefault();
+                    //         self.hideOverlay();
+                    //     });
+                    // }
                 });
-                player.load(source).then(function(){
+                player.load(data.streamSrc.mpd_url).then(function(){
                     data.player = player;
                     data.container.trigger('player_embed_complete');
                     self.debug('Shaka player load complete');
                     dfd.resolve(data);
                 }).catch(function(e){
                     self.debug('Shaka player load error', e);
-                    if (e.type == 'net' && e.message == 'Network failure.'){
-                        dfd.resolve();
-                    } else {
-                        dfd.reject();
-                    }
+                    console.log(e)
+                    // if (e.type == 'net' && e.message == 'Network failure.'){
+                    //     dfd.resolve();
+                    // } else {
+                    //     dfd.reject();
+                    // }
                 });
             }
             playerEmbedder.loadShakaSources().done(function(){
