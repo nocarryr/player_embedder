@@ -352,11 +352,6 @@
                 }
             }
 
-            // Only enable for Chrome for now
-            var userAgent = navigator.userAgent;
-            if (userAgent.indexOf('Chrome/') == -1){
-                dfd.reject();
-            }
             if (dfd.state() != 'rejected'){
               this.loadShakaSources().done(function(){
                   doTest();
