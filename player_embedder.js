@@ -1,4 +1,17 @@
 (function($){
+    var getCurrentShakaUrl = function(){
+        var dfd = $.Deferred(),
+            libUrl = '//cdnjs.cloudflare.com/ajax/libs/shaka-player/VERSION/shaka-player.compiled.js';
+        $.getJSON('//api.cdnjs.com/libraries/shaka-player', function(data){
+            console.log(data);
+            libUrl = libUrl.replace('VERSION', data.version);
+            console.log(libUrl);
+            dfd.resolve(libUrl);
+        }).fail(function(){
+            dfd.reject();
+        });
+        return dfd.promise();
+    };
     var playerEmbedder = {
         embed_methods: ['auto', 'html5', 'shaka', 'strobe'],
         html5_embed_method: 'html5',
@@ -19,9 +32,7 @@
                 '//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js',
                 //'_ROOTURL_STROBE_/jquery.strobemediaplayback.js',
             ],
-            'shaka':[
-                '//cdnjs.cloudflare.com/ajax/libs/shaka-player/2.0.0-beta2/shaka-player.compiled.js',
-            ]
+            'shaka':[],
         },
         debugMode: false,
         debugOutputFunction: null,
@@ -193,9 +204,18 @@
                 dfd.resolve();
                 return dfd.promise();
             }
-            playerEmbedder.loadSources('shaka').done(function(){
-                waitForShaka();
-            });
+            if (!playerEmbedder.scriptUrls.shaka.length){
+                getCurrentShakaUrl().done(function(url){
+                    playerEmbedder.scriptUrls.shaka = [url];
+                    playerEmbedder.loadSources('shaka').done(function(){
+                        waitForShaka();
+                    });
+                });
+            } else {
+                playerEmbedder.loadSources('shaka').done(function(){
+                    waitForShaka();
+                });
+            }
             return dfd.promise();
         },
         streamSrc: function(base_url){
