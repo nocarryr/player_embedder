@@ -32,7 +32,9 @@
                 '//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js',
                 //'_ROOTURL_STROBE_/jquery.strobemediaplayback.js',
             ],
-            'shaka':[],
+            'shaka':[
+                '//cdnjs.cloudflare.com/ajax/libs/shaka-player/2.0.1/shaka-player.compiled.js',
+            ],
         },
         debugMode: false,
         debugOutputFunction: null,
