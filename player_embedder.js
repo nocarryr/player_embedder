@@ -337,18 +337,19 @@
             function doTest(){
                 var self = playerEmbedder,
                     isSupported = false;
-                shaka.Player.support().then(function(support){
-                    if (!support.supported){
-                        self.debug('shaka-player not supported');
-                        dfd.reject();
-                    } else if (support.media['video/mp4; codecs="avc1.42E01E"'] === true){
-                        dfd.resolve();
-                    } else {
-                        dfd.reject();
-                    }
-                }).catch(function(){
+                if (!shaka.Player.isBrowserSupported()){
                     dfd.reject();
-                });
+                } else {
+                    shaka.Player.probeSupport().then(function(support){
+                        if (support.media['video/mp4; codecs="avc1.42E01E"'] === true){
+                            dfd.resolve();
+                        } else {
+                            dfd.reject();
+                        }
+                    }).catch(function(){
+                        dfd.reject();
+                    });
+                }
             }
 
             // Only enable for Chrome for now
