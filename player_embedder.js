@@ -630,6 +630,7 @@
                     self.debug('Flash version: ', flashVerStr);
                 }
                 self.addPlayerClasses(playerWrapper, data);
+                playerWrapper.addClass('player_embedder-video');
                 if (navigator.userAgent.search('PLAYSTATION') != -1){
                     embedStatic(playerWrapper);
                 } else {
