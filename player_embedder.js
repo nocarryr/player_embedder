@@ -20,9 +20,6 @@
             'strobe':'/strobe-media',
         },
         cssUrls: {
-            //'strobe':[
-                //'_ROOTURL_STROBE_/jquery.strobemediaplayback.css',
-            //],
             'all':[
                 '_ROOTURL_ALL_/player_embedder.css',
             ]
@@ -30,7 +27,6 @@
         scriptUrls: {
             'strobe':[
                 '//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js',
-                //'_ROOTURL_STROBE_/jquery.strobemediaplayback.js',
             ],
             'shaka':[
                 '//cdnjs.cloudflare.com/ajax/libs/shaka-player/2.0.1/shaka-player.compiled.js',
@@ -304,7 +300,6 @@
             }
             if (ua.toLowerCase().search('android') != -1){
                 data.isAndroid = true;
-            //    cdiv.append('<li><a href="URL">Click here to open in the video player app on you mobile device</a></li>'.replace('URL', data.streamSrc.hls_url));
             }
             this.debug('fallback content built');
             return cdiv;
@@ -332,9 +327,6 @@
             this.debug('testing MPEG-DASH support');
             var result,
                 dfd = $.Deferred();
-            // Disable shaka entirely for now.
-            //dfd.reject();
-            //return dfd.promise();
 
             function doTest(){
                 var self = playerEmbedder,
@@ -367,14 +359,7 @@
             if (typeof(data) == 'string'){
                 data = {'streamSrc':data};
             }
-    /*
-            if (typeof(data.container.jquery) == 'undefined'){
-                data.container = $(data.container);
-                if (data.container.length == 0){
-                    data.container = $("#" + data.container);
-                }
-            }
-    */
+
             if (typeof(data.container) == 'undefined' || data.container === null){
                 data.container = $("body");
             }
@@ -496,20 +481,9 @@
                     source;
                 vidtag.attr('crossorigin', 'anonymous');
                 player = new shaka.Player(vidtag.get(0));
-                //estimator = new shaka.util.EWMABandwidthEstimator();
-                //source = new shaka.player.DashVideoSource(data.streamSrc.mpd_url, null, estimator);
                 player.addEventListener('error', function(e){
-                    //var error = e.detail;
                     self.debug('Shaka Error', e);
                     data.container.trigger('player_error', [player, e]);
-                    // if (e.detail.status == 404){
-                    //     var msg = 'There was an error playing the requested content.  Please check your connection or refresh the page';
-                    //     self.showOverlayMessage(data, msg);
-                    //     data.overlay.click(function(e){
-                    //         e.preventDefault();
-                    //         self.hideOverlay();
-                    //     });
-                    // }
                 });
                 player.load(data.streamSrc.mpd_url).then(function(){
                     data.player = player;
@@ -518,12 +492,7 @@
                     dfd.resolve(data);
                 }).catch(function(e){
                     self.debug('Shaka player load error', e);
-                    console.log(e)
-                    // if (e.type == 'net' && e.message == 'Network failure.'){
-                    //     dfd.resolve();
-                    // } else {
-                    //     dfd.reject();
-                    // }
+                    console.log(e);
                 });
             }
             playerEmbedder.loadShakaSources().done(function(){
