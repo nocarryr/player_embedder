@@ -334,6 +334,11 @@
             var result,
                 dfd = $.Deferred();
 
+            if (window.navigator.userAgent.indexOf('MSIE 8') != -1){
+                dfd.reject();
+                return dfd.promise();
+            }
+
             function doTest(){
                 var self = playerEmbedder,
                     isSupported = false;
@@ -346,7 +351,7 @@
                         } else {
                             dfd.reject();
                         }
-                    }).catch(function(){
+                    })['catch'](function(){
                         dfd.reject();
                     });
                 }
@@ -496,7 +501,7 @@
                     data.container.trigger('player_embed_complete');
                     self.debug('Shaka player load complete');
                     dfd.resolve(data);
-                }).catch(function(e){
+                })['catch'](function(e){
                     self.debug('Shaka player load error', e);
                     console.log(e);
                 });
