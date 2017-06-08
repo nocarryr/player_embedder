@@ -229,6 +229,12 @@
                   }
                   return sourceStr.indexOf(searchStr, sourceStr.length - searchStr.length) !== -1;
               };
+            if (base_url.indexOf('://') < 4){
+                while (base_url[0] == '/'){
+                    base_url = base_url.slice(1);
+                }
+                base_url = window.location.protocol + '//' + base_url;
+            }
             $.each(defaults, function(key, val){
                 if (endsWith(base_url, val.split('.')[1])){
                     val = base_url;
