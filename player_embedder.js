@@ -281,7 +281,7 @@
             player.addClass(data.playerClasses.join(' '));
         },
         buildFallbackContent: function(data){
-            var cdiv = $('<ul style="margin-top:25%;text-align:center;font-size:1.5em;"></ul>'),
+            var cdiv = $('<ul style="text-align:center;font-size:1.5em;list-style-type:none;;"></ul>'),
                 ua = navigator.userAgent,
                 isDesktop = false;
             this.debug('building fallback content');
