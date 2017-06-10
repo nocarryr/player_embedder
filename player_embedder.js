@@ -373,7 +373,13 @@
 
             if (typeof(data.container) == 'undefined' || data.container === null){
                 data.container = $("body");
+            } else {
+                if (typeof(data.container.jquery) == 'undefined'){
+                    data.container = $(data.container);
+                }
+                data.container.addClass('player_embedder-container');
             }
+
             data = self.embedData(data);
             if (!data.size){
                 self.calcPlayerSize(data);
