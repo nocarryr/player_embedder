@@ -495,13 +495,56 @@
                     vidtag = self.buildVidTag(data),
                     player,
                     estimator,
-                    source;
+                    source,
+                    errorCallback = function(e){
+                      var retryErrorCodes = [
+                        shaka.util.Error.Code.BAD_HTTP_STATUS,
+                        shaka.util.Error.Code.HTTP_ERROR,
+                        shaka.util.Error.Code.TIMEOUT
+                      ];
+
+                      self.shakaNumErrors += 1;
+                      self.debug('Shaka Error', e);
+                      data.container.trigger('player_error', [player, e]);
+                      self.debug('shakaNumRetries: ' + self.shakaNumRetries.toString());
+                      if (self.shakaNumErrors >= self.shakaMaxErrors){
+                          shaka.log.warning('Live streaming error. Max attempts reached');
+                          player.destroy();
+                      } else if (player.isLive() && retryErrorCodes.indexOf(e.code) >= 0){
+                          if (self.shakaNumRetries >= self.shakaMaxRetries){
+                              shaka.log.warning('Live streaming error. Max attempts reached');
+                              self.debug('Unloading player');
+                              player.destroy();
+                          }
+                      }
+                    },
+                    failureCallback = function(e){
+                      var retryErrorCodes = [
+                          shaka.util.Error.Code.BAD_HTTP_STATUS,
+                          shaka.util.Error.Code.HTTP_ERROR,
+                          shaka.util.Error.Code.TIMEOUT
+                      ];
+
+                      if (player.isLive() && retryErrorCodes.indexOf(e.code) >= 0 && self.shakaNumRetries < self.shakaMaxRetries) {
+                          e.severity = shaka.util.Error.Severity.RECOVERABLE;
+                          self.shakaNumRetries += 1;
+                          shaka.log.warning('Live streaming error.  Retrying automatically (attempt ' + self.shakaNumRetries.toString() + ')...');
+                          player.retryStreaming();
+                      }
+                    };
+
                 vidtag.attr('crossorigin', 'anonymous');
                 player = new shaka.Player(vidtag.get(0));
-                player.addEventListener('error', function(e){
-                    self.debug('Shaka Error', e);
-                    data.container.trigger('player_error', [player, e]);
+                self.shakaNumRetries = 0;
+                self.shakaMaxRetries = 30;
+                self.shakaNumErrors = 0;
+                self.shakaMaxErrors = 8;
+                player.configure({
+                    streaming:{
+                        failureCallback:failureCallback,
+                    },
                 });
+                player.addEventListener('error', errorCallback);
                 player.load(data.streamSrc.mpd_url).then(function(){
                     data.player = player;
                     data.container.trigger('player_embed_complete');
